@@ -64,6 +64,47 @@ data "aws_iam_policy_document" "controller_assume_role" {
       }
     }
   }
+
+  dynamic "statement" {
+    for_each = var.controller_assume_policy_statements != null ? var.controller_assume_policy_statements : {}
+
+    content {
+      sid           = try(coalesce(statement.value.sid, statement.key))
+      actions       = statement.value.actions
+      not_actions   = statement.value.not_actions
+      effect        = statement.value.effect
+      resources     = statement.value.resources
+      not_resources = statement.value.not_resources
+
+      dynamic "principals" {
+        for_each = statement.value.principals != null ? statement.value.principals : []
+
+        content {
+          type        = principals.value.type
+          identifiers = principals.value.identifiers
+        }
+      }
+
+      dynamic "not_principals" {
+        for_each = statement.value.not_principals != null ? statement.value.not_principals : []
+
+        content {
+          type        = not_principals.value.type
+          identifiers = not_principals.value.identifiers
+        }
+      }
+
+      dynamic "condition" {
+        for_each = statement.value.condition != null ? statement.value.condition : []
+
+        content {
+          test     = condition.value.test
+          values   = condition.value.values
+          variable = condition.value.variable
+        }
+      }
+    }
+  }
 }
 
 resource "aws_iam_role" "controller" {
@@ -330,6 +371,47 @@ data "aws_iam_policy_document" "node_assume_role" {
     principals {
       type        = "Service"
       identifiers = ["ec2.${local.dns_suffix}"]
+    }
+  }
+
+  dynamic "statement" {
+    for_each = var.node_assume_policy_statements != null ? var.node_assume_policy_statements : {}
+
+    content {
+      sid           = try(coalesce(statement.value.sid, statement.key))
+      actions       = statement.value.actions
+      not_actions   = statement.value.not_actions
+      effect        = statement.value.effect
+      resources     = statement.value.resources
+      not_resources = statement.value.not_resources
+
+      dynamic "principals" {
+        for_each = statement.value.principals != null ? statement.value.principals : []
+
+        content {
+          type        = principals.value.type
+          identifiers = principals.value.identifiers
+        }
+      }
+
+      dynamic "not_principals" {
+        for_each = statement.value.not_principals != null ? statement.value.not_principals : []
+
+        content {
+          type        = not_principals.value.type
+          identifiers = not_principals.value.identifiers
+        }
+      }
+
+      dynamic "condition" {
+        for_each = statement.value.condition != null ? statement.value.condition : []
+
+        content {
+          test     = condition.value.test
+          values   = condition.value.values
+          variable = condition.value.variable
+        }
+      }
     }
   }
 }
